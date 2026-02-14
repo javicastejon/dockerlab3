@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitor de Tareas Asíncronas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+    }
+
+    header {
+      background-color: #111827;
+      color: white;
+      padding: 1rem 2rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    input {
+      flex: 1;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f9fafb;
+    }
+
+    .estado-PENDIENTE {
+      color: #92400e;
+      font-weight: bold;
+    }
+
+    .estado-PROCESANDO {
+      color: #1d4ed8;
+      font-weight: bold;
+    }
+
+    .estado-COMPLETADA {
+      color: #065f46;
+      font-weight: bold;
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h2>Docker Compose · Sistema Asíncrono</h2>
+</header>
+
+<main>
+  <h1>Gestión y Monitorización de Tareas</h1>
+
+  <p>
+    Esta interfaz permite comprobar que la <b>API</b>, la <b>cola</b>, el
+    <b>worker</b> y la <b>base de datos</b> funcionan correctamente en Docker.
+  </p>
+
+  <form onsubmit="event.preventDefault(); crearTarea();">
+    <input id="descripcion" placeholder="Descripción de la tarea" required>
+    <button>Crear tarea</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+  </table>
+
+  <footer>
+    <p>Grado Superior · Docker · Procesamiento asíncrono</p>
+  </footer>
+</main>
+
+<script>
+const API = "http://localhost:8080/api/tasks";
+
+function cargarTareas() {
+  fetch(API)
+    .then(res => res.json())
+    .then(data => {
+      tabla.innerHTML = "";
+      data.forEach(t => {
+        tabla.innerHTML += `
+          <tr>
+            <td>${t.id}</td>
+            <td>${t.descripcion}</td>
+            <td class="estado-${t.estado}">${t.estado}</td>
+          </tr>
+        `;
+      });
+    });
+}
+
+function crearTarea() {
+  fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ descripcion: descripcion.value })
+  }).then(() => {
+    descripcion.value = "";
+    cargarTareas();
+  });
+}
+
+// Refresco automático cada 2 segundos
+setInterval(cargarTareas, 2000);
+cargarTareas();
+</script>
+
+</body>
+</html>

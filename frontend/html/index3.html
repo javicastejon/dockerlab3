@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Proyecto Docker DAM</title>
+  <script>
+    async function cargarMensaje() {
+      try {
+        const response = await fetch("http://localhost:8080/api/message");
+        const data = await response.json();
+        document.getElementById("mensaje").innerText = data.message;
+      } catch (error) {
+        document.getElementById("mensaje").innerText = "Error conectando con el backend";
+      }
+    }
+
+    window.onload = cargarMensaje;
+  </script>
+</head>
+<body>
+  <h1>Arquitectura Docker Front + Back + BD</h1>
+  <p><strong>Mensaje desde la base de datos:</strong></p>
+  <p id="mensaje">Cargando...</p>
+</body>
+</html>

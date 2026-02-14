@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: ejemplo
+      MYSQL_USER: usuario
+      MYSQL_PASSWORD: secreto
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - datos_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    command: redis-server
+    volumes:
+      - datos_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 10
+
+  api:
+    build: ./api
+    ports:
+      - "8080:8080"
+    environment:
+      DB_USER: usuario
+      DB_PASSWORD: secreto
+    depends_on:
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+  worker:
+    build: ./worker
+    depends_on:
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  datos_mysql:
+  datos_redis:
